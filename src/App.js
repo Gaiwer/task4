@@ -6,9 +6,8 @@ import {
     Redirect,
     withRouter
 } from "react-router-dom";
-import Form from './Form.js';
-import ApiComponent from './ApiComponent.js';
-
+// import Form from './Form.js';
+// import ApiComponent from './ApiComponent.js';
 
 const AuthExample = () => (
     <Router>
@@ -23,7 +22,7 @@ const AuthExample = () => (
                 </li>
             </ul>
             <Route path="/public" component={Public} />
-            <Route path="/login" component={Login} />
+            {/*<Route path="/login" component={Login} />*/}
             <PrivateRoute path="/protected" component={Protected} />
         </div>
     </Router>
@@ -41,27 +40,6 @@ const fakeAuth = {
     }
 };
 
-const AuthButton = withRouter(
-    ({ history }) =>
-        fakeAuth.isAuthenticated ? (
-            <div>
-                Welcome!{" "}
-                <div className='col-md-12'>Найдите репозиторий по имени владельца:</div>
-                <form className='col-md-4' >
-                    <input type='text' placeholder='Enter name of owner'/>
-                    <button type='submit'>Enter</button>
-                </form>
-                <button onClick={() => {
-                        fakeAuth.signout(() => history.push("/"));
-                    }}
-                >
-                    Sign out
-                </button>
-            </div>
-        ) : (
-            <p>You are not logged in.</p>
-        )
-);
 
 const PrivateRoute = ({ component: Component, ...rest }) => (
     <Route
@@ -84,21 +62,40 @@ const PrivateRoute = ({ component: Component, ...rest }) => (
 const Public = () => <h3>Public page</h3>;
 const Protected = () => <h3>Protected</h3>;
 
+class AuthButton  extends Component {
 
-class Login extends Component {
+    constructor(props) {
+        super(props);
 
-    state = {
-        redirectToReferrer: false
-    };
+        this.state = {
+            status:[]
+        }
+
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.findRepository = this.findRepository.bind(this);
+    }
+
+
 
     login = () => {
         fakeAuth.authenticate(() => {
             this.setState({ redirectToReferrer: true });
         });
-    };
+    }
+
+
+    searchHandler = (event) => {
+        event.preventDefault();
+        console.log('try to find it: ' + this.state.searchVal);
+    }
+
+    inputHanler = (event) => {
+        this.setState({ searchVal: event.target.value })
+    }
 
     handleSubmit(event) {
-        event.preventDefault()
+        event.preventDefault();
         {
             const value = event.target.elements[0].value;
             console.log(value);
@@ -107,43 +104,88 @@ class Login extends Component {
 
             /* Check if a value exists in LocalStorage */
             if ( loginInLocalStorage == value ) {
-                /* Current url */
-                // let url = location.pathname;
-                // let mytest = url + "/TEST";
-                // console.log(mytest);
                 console.log("You registered.");
             }
         }
     }
 
+    handleChange(event) {
+        this.setState({value: event.target.value});
+    }
+
+    findRepository(event) {
+        event.preventDefault();
+        {
+            const value = event.target.elements[0].value;
+            console.log(value);
+
+                fetch('https://api.github.com/users/' + value + '/repos')
+                .then((response) => {
+                        if (response.status !== 200) {
+                            console.log('Looks like there was a problem. Status Code: ' +
+                                response.status);
+                            return;
+                        }
+
+                        // Examine the text in the response
+                        response.json().then((data) => {
+                            console.log(data);
+
+                            this.setState({
+                                status:data
+                            });
+                        });
+                    }
+                )
+                .catch(function(err) {
+                    console.log('Fetch Error :-S', err);
+                });
+            }
+    }
+
     render() {
-        const { from } = this.props.location.state || { from: { pathname: "/" } };
-        const { redirectToReferrer } = this.state;
+        console.log(this.state)
+        // console.log(this.state.status[0].id)
 
-        if (redirectToReferrer) {
-            return <Redirect to={'seach'} />;
-        }
-
-        return (
-            <div>
-                <p>You must log in to view the page at {from.pathname}</p>
-                <div className='row'>
-                    <div className='col-md-12'>Пожалуйста, введите Ваш логин:</div>
-                    <form className='col-md-4' onSubmit={this.handleSubmit}>
-                        <input type='text' placeholder='Enter your login'/>
-                        <button type='submit' onClick={this.login}>Enter</button>
-                        {this.props.data}
+        return(
+            fakeAuth.isAuthenticated ? (
+                <div>
+                    Welcome!{" "}
+                    <div className='col-md-12'>Найдите репозиторий по имени владельца:</div>
+                    <form className='col-md-4' onSubmit={this.findRepository}>
+                        <input type='text' placeholder='Enter name of owner' onChange={this.handleChange}/>
+                        <button type='submit'>Enter</button>
                     </form>
+
+
+                    {/*<ul>*/}
+                        {/*{this.state.status[0].id}*/}
+                    {/*</ul>*/}
+
+
+                    <button onClick={() => {
+                        location.reload();
+                    }}
+                    >
+                        Sign out
+                    </button>
                 </div>
-            </div>
+            ) : (
+                <div>
+                    <p>You are not logged in.</p>
+                    <p>You must log in to view the protected page.</p>
+                    <div className='row'>
+                        <div className='col-md-12'>Please enter your login:</div>
+                        <form className='col-md-4' onSubmit={this.handleSubmit}>
+                            <input type='text' placeholder='Enter your login'/>
+                            <button type='submit' onClick={this.login}>Enter</button>
+                        </form>
+                    </div>
+                </div>
+            )
         );
     }
 }
 
-export default AuthExample;
 
-
-
-
-
-
+export default AuthButton;

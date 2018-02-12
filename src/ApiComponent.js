@@ -1,11 +1,4 @@
 import React, { Component } from 'react';
-import {
-    BrowserRouter as Router,
-    Route,
-    Link,
-    Redirect,
-    withRouter
-} from "react-router-dom";
 
 
 class ApiComponent extends Component {
@@ -49,6 +42,18 @@ class ApiComponent extends Component {
         } else {
             return (
                 <ul>
+
+
+                    {/*{ data.map( (el, key) => (*/}
+                        {/*<li*/}
+                            {/*key={key}*/}
+                            {/*link={el.url}*/}
+                            {/*onClick={() => this.getRepoHandler(this.state.search, el.name)}*/}
+                        {/*>*/}
+                            {/*{el.name}*/}
+                        {/*</li>*/}
+                    {/*) ) }*/}
+
 
                     {Object.keys(data).map(dataId => (
                         <div key={dataId} className="card-panel">
