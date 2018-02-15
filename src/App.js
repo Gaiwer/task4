@@ -151,13 +151,13 @@ class AuthButton  extends Component {
     render() {
         console.log(this.state);
         const { error, isLoaded, data } = this.state;
-        const answer = this.state.status;
-        console.log(answer);
+        // const answer = this.state.status;
+        // console.log(answer);
 
         if (isLoaded) {
             return (
                 <div>
-                    { answer.map( (el, key) => (
+                    { this.state.status.map( (el, key) => (
                         <li
                             key={key}
                             link={el.url}
